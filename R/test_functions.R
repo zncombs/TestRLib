@@ -4,6 +4,9 @@
 #' @importFrom maps map
 #' @importFrom graphics points
 
+## quiets concerns of R CMD check re: the .'s that appear in pipelines
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("%>%","year","MONTH","n","STATE"))
+
 #' @title fars_read
 #' @description attempts to read a file and creates a data.frame from that file if it is found to exist.
 #' @param filename string name of file to be imported.
