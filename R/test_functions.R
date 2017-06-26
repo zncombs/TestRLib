@@ -3,9 +3,10 @@
 #' @importFrom tidyr spread
 #' @importFrom maps map
 #' @importFrom graphics points
+#' @importFrom utils globalVariables
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("%>%","year","MONTH","n","STATE"))
+if(getRversion() >= "2.15.1")  globalVariables(c("%>%","year","MONTH","n","STATE"))
 
 #' @title fars_read
 #' @description attempts to read a file and creates a data.frame from that file if it is found to exist.
@@ -70,10 +71,6 @@ fars_summarize_years <- function(years) {
 #' @description this function returns a summarization of fatalities grouped by the year and month, and accepts alist of years.
 #' @param state.num int value of the state the user wishes to filter by.
 #' @param year int value that user wished to provide the summarization for.
-#' @examples
-#' \dontrun{
-#'  fars_map_state(state.num = 1, year = 2015)
-#' }
 #' @return data.frame provides a summarization of fatalities grouped by year, and month dimensions.
 #' @export
 
