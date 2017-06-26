@@ -17,8 +17,3 @@ data.frame provides a summarization of fatalities grouped by year, and month dim
 \description{
 this function returns a summarization of fatalities grouped by the year and month, and accepts alist of years.
 }
-\examples{
-\dontrun{
- fars_map_state(state.num = 1, year = 2015)
-}
-}

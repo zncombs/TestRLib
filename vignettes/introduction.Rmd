@@ -1,0 +1,113 @@
+---
+title: "Introduction to Test R Package"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This is meant to provide a brief introduction to the package functions.
+
+## fars_read
+
+This is a helper function that reads the data.
+
+```{r echo=TRUE}
+
+fars_read <- function(filename) {
+  if(!file.exists(filename))
+    stop("file '", filename, "' does not exist")
+  data <- suppressMessages({
+    read_csv(filename, progress = FALSE)
+  })
+  tbl_df(data)
+}
+
+```
+
+
+## make_filename
+
+This is a helper function that creates a filename that matches the integer year value specified by the user.
+
+```{r, echo=TRUE}
+
+make_filename <- function(year) {
+  year <- as.integer(year)
+  sprintf("accident_%d.csv.bz2", year)
+}
+
+```
+
+## fars_read_years
+
+This fuction reads the data which is to be summarized and visualized.
+
+```{r, echo=TRUE}
+
+fars_read_years <- function(years) {
+
+  lapply(years, function(year) {
+    file <- make_filename(year)
+    tryCatch({
+      dat <- fars_read(file)
+      mutate(dat, year = year) %>%
+        select(MONTH, year)
+    }, error = function(e) {
+      warning("invalid year: ", year)
+      return(NULL)
+    })
+  })
+}
+
+```
+
+## fars_summarize_years
+
+This function applies summary functions to the dataset utilizing dplyr functionality.
+
+```{r, echo=TRUE}
+
+fars_summarize_years <- function(years) {
+
+  dat_list <- fars_read_years(years) %>%
+    bind_rows(dat_list) %>%
+    group_by(year, MONTH) %>%
+    summarize(n = n()) %>%
+    spread(year, n)
+}
+
+```
+
+## fars_map_state
+
+```{r, echo=FALSE}
+
+fars_map_state <- function(state.num, year) {
+
+  globalVariables(c("STATE"))
+
+  filename <- make_filename(year)
+  data <- fars_read(filename)
+  state.num <- as.integer(state.num)
+
+  if(!(state.num %in% unique(data$STATE)))
+    stop("invalid STATE number: ", state.num)
+  data.sub <- filter(data, STATE == state.num)
+  if(nrow(data.sub) == 0L) {
+    message("no accidents to plot")
+    return(invisible(NULL))
+  }
+  is.na(data.sub$LONGITUD) <- data.sub$LONGITUD > 900
+  is.na(data.sub$LATITUDE) <- data.sub$LATITUDE > 90
+  with(data.sub, {
+    map("state", ylim = range(LATITUDE, na.rm = TRUE),
+              xlim = range(LONGITUD, na.rm = TRUE))
+    points(LONGITUD, LATITUDE, pch = 46)
+  })
+}
+
+```
